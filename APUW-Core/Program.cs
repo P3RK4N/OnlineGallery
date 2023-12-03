@@ -333,7 +333,7 @@ application.MapGet("/api/photos/{photoID}/user", async (int photoID, HttpContext
     }
 
     var photoUser = await dbContext.Users.Where(u => u.Id == photoUserId[0]).ToListAsync();
-    await context.Response.WriteAsJsonAsync(photoUser.ConvertAll(u => new UserDTO{ Id = u.Id, UserName = u.UserName }));
+    await context.Response.WriteAsJsonAsync(photoUser.ConvertAll(u => new UserDTO{ Id = u.Id, UserName = u.UserName }).First());
 });
 
 #endregion
@@ -424,7 +424,7 @@ application.MapPost("/api/photos/{photoName}/create", async (string photoName, H
         await context.Response.WriteAsync($"Photo creation failed!");
         return;
     }
-    if(context.Request.ContentLength == null || context.Request.ContentType == null)
+    if(context.Request.ContentLength == null || context.Request.ContentType == null || context.Request.ContentLength.Value == 0)
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsync($"Photo creation failed!");
@@ -459,7 +459,7 @@ application.MapPost("/api/photos/{photoID}/update", async (int photoID, HttpCont
         await context.Response.WriteAsync($"Photo update forbidden!");
         return;
     }
-    if(context.Request.ContentLength == null || context.Request.ContentType == null)
+    if(context.Request.ContentLength == null || context.Request.ContentType == null || context.Request.ContentLength.Value == 0)
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsync($"Photo update failed!");

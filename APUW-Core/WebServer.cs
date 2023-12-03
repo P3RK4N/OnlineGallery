@@ -310,7 +310,7 @@ public class WebServer
             }
 
             var photoUser = await dbContext.Users.Where(u => u.Id == photoUserId[0]).ToListAsync();
-            await context.Response.WriteAsJsonAsync(photoUser.ConvertAll(u => new UserDTO{ Id = u.Id, UserName = u.UserName }));
+            await context.Response.WriteAsJsonAsync(photoUser.ConvertAll(u => new UserDTO{ Id = u.Id, UserName = u.UserName }).First());
         });
 
         application.MapPost("/api/user/update", async (HttpContext context, UserManager userManager, DbContext dbContext) =>
@@ -397,7 +397,7 @@ public class WebServer
                 await context.Response.WriteAsync($"Photo creation failed!");
                 return;
             }
-            if(context.Request.ContentLength == null || context.Request.ContentType == null)
+            if(context.Request.ContentLength == null || context.Request.ContentType == null || context.Request.ContentLength.Value == 0)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsync($"Photo creation failed!");
@@ -432,7 +432,7 @@ public class WebServer
                 await context.Response.WriteAsync($"Photo update forbidden!");
                 return;
             }
-            if(context.Request.ContentLength == null || context.Request.ContentType == null)
+            if(context.Request.ContentLength == null || context.Request.ContentType == null || context.Request.ContentLength.Value == 0)
             {
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 await context.Response.WriteAsync($"Photo update failed!");
@@ -504,12 +504,10 @@ public class WebServer
         await application.RunAsync();
     }
 
-    public async void Stop()
+    public void Stop()
     {
         if(application != null)
         {
-            //await application.StopAsync();
-            //await application.DisposeAsync();
             application.Services.GetRequiredService<DbContext>().Database.EnsureDeleted();
             application.Lifetime.StopApplication();
         }
