@@ -1,0 +1,362 @@
+openapi: 3.0.3
+info:
+  title: Online Gallery
+  description: |-
+    The Online Gallery API provides endpoints for users to interact with the Online Gallery application. Users can register, login, upload pictures to their personal galleries, and explore galleries created by other users.
+  version: 1.0.11
+tags:
+  - name: user
+    description: Operations about user
+  - name: photos
+    description: Operations about photos
+paths:
+  # GET - DOCS
+  /:
+    get:
+      summary: Gets API Docs
+      responses:
+        '200':
+          description: Successful operation
+  
+  # GET|POST - MOCK REGISTER
+  /api/user/register:
+    get:
+      tags:
+        - user
+      summary: Gets mock registration page
+      responses:
+        '200':
+          description: successful operation
+    post:
+      tags:
+        - user
+      summary: Registers new user
+      parameters:
+        - name: username
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: password
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: invalid parameters or existing user
+  
+  # GET|POST - MOCK LOGIN
+  /api/user/login:
+    get:
+      tags:
+        - user
+      summary: Gets mock login page
+      responses:
+        '200':
+          description: successful operation
+    post:
+      tags:
+        - user
+      summary: Logs in existing user
+      parameters:
+        - name: username
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: password
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation. Redirects to GET /user
+        '400':
+          description: invalid parameters or non-existing user
+  
+  # POST - LOGOUT
+  /api/user/logout:
+    post:
+      tags:
+        - user
+      summary: Logs out existing user
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Already logged out!
+
+  # POST - DELETE USER
+  /api/user/delete:
+    post:
+      tags:
+        - user
+      summary: Deletes current user
+      responses:
+        '200':
+          description: successful operation
+        '403':
+          description: Not currently logged in or not the owner of account
+  
+  # POST - UPDATE USER
+  /api/user/update:
+    post:
+      tags:
+        - user
+      summary: Updates current user (only username at the moment)
+      parameters:
+        - name: username
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: invalid parameters
+        '403':
+          description: Not currently logged in or not the owner of account
+          
+  # GET - CURRENT USER
+  /api/user:
+    get:
+      tags:
+        - user
+      summary: Gets currently logged in user
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: user not logged in. Redirects to GET /user/login
+                
+  # GET - ALL USERS
+  /api/users:
+    get:
+        tags:
+          - user
+        summary: Gets all users of gallery
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/User'
+                  
+  # GET - USER
+  /api/users/{username}:
+    get:
+        tags:
+          - user
+        summary: Gets user with desired username
+        parameters:
+          - name: username
+            required: true
+            in: path
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/User'
+          '400':
+            description: user does not exist
+            
+  # GET - USER
+  /api/users/{username}/photos:
+    get:
+        tags:
+          - user
+        summary: Gets photos from desired user
+        parameters:
+          - name: username
+            required: true
+            in: path
+            schema:
+              type: string
+        responses:
+          '200':
+            description: successful operation
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Photo'
+          '400':
+            description: user does not exist
+
+  
+  # GET - ALL PHOTOS
+  /api/photos:
+    get:
+      tags:
+        - photos
+      summary: Gets all photos from gallery
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Photo'
+                
+  # GET - PHOTO
+  /api/photos/{photoID}:
+    get:
+      tags:
+        - photos
+      summary: Gets photo from gallery
+      parameters:
+        - name: photoID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '400':
+          description: photo with desired id does not exist
+                
+  # GET - PHOTO OWNER
+  /api/photos/{photoID}/user:
+    get:
+      tags:
+        - photos
+      summary: Gets user of selected photo
+      parameters:
+        - name: photoID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: photo with desired id does not exist
+                
+  # POST - CREATE PHOTO
+  /api/photos/{photoName}/create:
+    post:
+      tags:
+        - photos
+      summary: Creates photo with photoName
+      parameters:
+        - name: photoName
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: invalid parameter or request body
+        '403':
+          description: not currently logged in
+                
+  # POST - UPDATE PHOTO
+  /api/photos/{photoID}/update:
+    post:
+      tags:
+        - photos
+      summary: Updates photo with desired id
+      parameters:
+        - name: photoID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: invalid parameter or body, non existing photo
+        '403':
+          description: not currently logged in or not the owner of the picture
+          
+                
+  # POST - DELETE PHOTO
+  /api/photos/{photoID}/delete:
+    post:
+      tags:
+        - photos
+      summary: Deletes photo with desired id
+      parameters:
+        - name: photoID
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: invalid parameter or body, non existing photo
+        '403':
+          description: not currently logged in or not the owner of the picture
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        Id:
+          type: string
+        UserName:
+          type: string
+    Photo:
+      type: object
+      properties:
+        Id:
+          type: integer
+        UserId:
+          type: string
+        FileName:
+          type: string
+        ContentType:
+          type: string
+        Content:
+          type: string
